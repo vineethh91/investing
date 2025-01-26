@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equity Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    form {
+      display: grid;
+      gap: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Equity Calculator</h1>
+    <form id="calculatorForm">
+      <label>
+        Purchase Price:
+        <input type="number" id="purchasePrice" required>
+      </label>
+      <label>
+        Interest Rate (%):
+        <input type="number" step="0.01" id="interestRate" required>
+      </label>
+      <label>
+        Down Payment:
+        <input type="number" id="downPayment" required>
+      </label>
+      <label>
+        Year of Purchase:
+        <input type="number" id="purchaseYear" min="1900" max="2100" required>
+      </label>
+      <label>
+        Month of Purchase:
+        <select id="purchaseMonth" required>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </label>
+      <button type="button" onclick="calculate()">Submit</button>
+    </form>
+
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Year</th>
+          <th>Principal Payment</th>
+          <th>Interest Payment</th>
+          <th>Total Monthly Payment</th>
+          <th>Cumulative Principal Paid</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    function calculate() {
+      const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+      const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
+      const downPayment = parseFloat(document.getElementById('downPayment').value);
+      const purchaseYear = parseInt(document.getElementById('purchaseYear').value);
+      const purchaseMonth = parseInt(document.getElementById('purchaseMonth').value);
+
+      const loanAmount = purchasePrice - downPayment;
+      const monthlyRate = interestRate / 12;
+      const totalMonths = 30 * 12;
+
+      const monthlyPayment = (loanAmount * monthlyRate) /
+        (1 - Math.pow(1 + monthlyRate, -totalMonths));
+
+      let remainingBalance = loanAmount;
+      let cumulativePrincipal = downPayment;
+
+      const tableBody = document.getElementById('resultsTable').querySelector('tbody');
+      tableBody.innerHTML = '';
+
+      let currentYear = purchaseYear;
+      let currentMonth = purchaseMonth;
+
+      for (let i = 0; i < totalMonths; i++) {
+        const interestPayment = remainingBalance * monthlyRate;
+        const principalPayment = monthlyPayment - interestPayment;
+        remainingBalance -= principalPayment;
+        cumulativePrincipal += principalPayment;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${currentMonth}</td>
+          <td>${currentYear}</td>
+          <td>${principalPayment.toFixed(2)}</td>
+          <td>${interestPayment.toFixed(2)}</td>
+          <td>${monthlyPayment.toFixed(2)}</td>
+          <td>${cumulativePrincipal.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+
+        currentMonth++;
+        if (currentMonth > 12) {
+          currentMonth = 1;
+          currentYear++;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
